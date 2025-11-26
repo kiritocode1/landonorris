@@ -3,4 +3,5 @@ Hero3D.tsx: Reduced pointerRadius uniform so the fluid blob/trail is smaller and
 Hero3D.tsx: Adjusted pointerRadius (~+20%) and reduced pointerDuration so the fluid blob is slightly larger but fades more quickly.
 Hero3D.tsx: Changed Canvas background color from near-black to a neutral gray (0x2a2a2a) behind the 3D scene.
 Hero3D.tsx: Tweaked blob shader advection and added a curl-like term based on local gradients so the cursor trail swirls and diffuses more like a fluid sim.
-
+page.tsx: Replaced bare full-screen hero with an overlaid UI inspired by landonorris.com, branding BLANKO NORRIS, crediting aryank.space, and adding a dark, minimalist cyberpunk paragraph with English/Japanese lines referencing the original site.
+layout.tsx: Updated Next.js metadata to BLANKO NORRIS branding with cyberpunk helmet interface title, description, and basic Open Graph config.
