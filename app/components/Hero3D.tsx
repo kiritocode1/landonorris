@@ -13,6 +13,7 @@ class BlobMaterial extends THREE.MeshBasicMaterial {
 		dTime: { value: number };
 		aspect: { value: number };
 		pointer: { value: THREE.Vector2 };
+		pointerVelocity: { value: THREE.Vector2 };
 		pointerDown: { value: number };
 		pointerRadius: { value: number };
 		pointerDuration: { value: number };
@@ -26,9 +27,12 @@ class BlobMaterial extends THREE.MeshBasicMaterial {
 			dTime: { value: 0 },
 			aspect: { value: 1 },
 			pointer: { value: new THREE.Vector2(10, 10) },
+			pointerVelocity: { value: new THREE.Vector2(0, 0) },
 			pointerDown: { value: 1 },
-			pointerRadius: { value: 0.375 },
-			pointerDuration: { value: 2.5 },
+			// Base radius for the fluid trail/blob
+			pointerRadius: { value: 0.26 }, // ~20% larger than previous 0.22
+			// Shorter duration so the fluid lingers for a smaller bit
+			pointerDuration: { value: 1.6 },
 			fbTexture: { value: null },
 		};
 		this.defines = { USE_UV: "" };
@@ -42,6 +46,7 @@ class BlobMaterial extends THREE.MeshBasicMaterial {
 		shader.uniforms.dTime = this._uniforms.dTime;
 		shader.uniforms.aspect = this._uniforms.aspect;
 		shader.uniforms.pointer = this._uniforms.pointer;
+		shader.uniforms.pointerVelocity = this._uniforms.pointerVelocity;
 		shader.uniforms.pointerDown = this._uniforms.pointerDown;
 		shader.uniforms.pointerRadius = this._uniforms.pointerRadius;
 		shader.uniforms.pointerDuration = this._uniforms.pointerDuration;
@@ -51,6 +56,7 @@ class BlobMaterial extends THREE.MeshBasicMaterial {
       uniform float dTime;
       uniform float aspect;
       uniform vec2 pointer;
+      uniform vec2 pointerVelocity;
       uniform float pointerDown;
       uniform float pointerRadius;
       uniform float pointerDuration;
@@ -63,7 +69,23 @@ class BlobMaterial extends THREE.MeshBasicMaterial {
       
       float duration = pointerDuration;
       
-      float rVal = texture2D(fbTexture, vUv).r;
+      // Advection step: push the field along the cursor velocity for a
+      // more fluid, streaky motion instead of a static blob.
+      vec2 vel = pointerVelocity * vec2(aspect, 1.0);
+      float advectStrength = 0.12;
+      vec2 advectedUv = vUv - vel * advectStrength;
+      advectedUv = clamp(advectedUv, vec2(0.001), vec2(0.999));
+      
+      float rVal = texture2D(fbTexture, advectedUv).r;
+      
+      // Simple diffusion: small blur around the advected sample to get
+      // softer, more fluid trails.
+      vec2 blurOffset = vec2(0.002, 0.002);
+      rVal += texture2D(fbTexture, advectedUv + blurOffset).r;
+      rVal += texture2D(fbTexture, advectedUv - blurOffset).r;
+      rVal += texture2D(fbTexture, advectedUv + vec2(blurOffset.x, -blurOffset.y)).r;
+      rVal += texture2D(fbTexture, advectedUv + vec2(-blurOffset.x, blurOffset.y)).r;
+      rVal *= 0.2;
       
       rVal -= clamp(dTime / duration, 0., 0.1);
       rVal = clamp(rVal, 0., 1.);
@@ -73,7 +95,14 @@ class BlobMaterial extends THREE.MeshBasicMaterial {
         vec2 uv = (vUv - 0.5) * 2. * vec2(aspect, 1.);
         vec2 mouse = pointer * vec2(aspect, 1);
         
-        f = 1. - smoothstep(pointerRadius * 0.1, pointerRadius, distance(uv, mouse));
+        // Draw a slightly elongated stroke in the opposite direction of
+        // the motion so the trail follows the cursor like a fluid.
+        vec2 dir = normalize(pointerVelocity + 1e-5);
+        float dHead = distance(uv, mouse);
+        float dTail = distance(uv, mouse - dir * pointerRadius * 0.5);
+        float head = 1. - smoothstep(pointerRadius * 0.05, pointerRadius, dHead);
+        float tail = 1. - smoothstep(pointerRadius * 0.1, pointerRadius * 1.2, dTail);
+        f = max(head, tail);
       }
       rVal += f * 0.1;
       rVal = clamp(rVal, 0., 1.);
@@ -186,6 +215,7 @@ function BlobSystem({ onTextureReady }: BlobSystemProps) {
 	const sceneRef = useRef<THREE.Scene | null>(null);
 	const cameraRef = useRef<THREE.Camera | null>(null);
 	const pointerRef = useRef(new THREE.Vector2(10, 10));
+	const prevPointerRef = useRef(new THREE.Vector2(10, 10));
 	const initializedRef = useRef(false);
 
 	useEffect(() => {
@@ -218,6 +248,7 @@ function BlobSystem({ onTextureReady }: BlobSystemProps) {
 
 		const handlePointerLeave = () => {
 			pointerRef.current.set(10, 10);
+			prevPointerRef.current.set(10, 10);
 		};
 
 		window.addEventListener("pointermove", handlePointerMove);
@@ -247,9 +278,16 @@ function BlobSystem({ onTextureReady }: BlobSystemProps) {
 	useFrame((_state: RootState, delta: number) => {
 		if (!materialRef.current || !rtRef.current || !fbTextureRef.current || !sceneRef.current || !cameraRef.current) return;
 
+		// Compute pointer velocity in NDC space for the fluid trail behaviour
+		const currentPointer = pointerRef.current;
+		const previousPointer = prevPointerRef.current;
+		const velocity = currentPointer.clone().sub(previousPointer);
+		prevPointerRef.current.copy(currentPointer);
+
 		// Update uniforms
 		materialRef.current.uniforms.dTime.value = delta;
 		materialRef.current.uniforms.pointer.value.copy(pointerRef.current);
+		materialRef.current.uniforms.pointerVelocity.value.copy(velocity);
 
 		// Render blob to RT
 		gl.setRenderTarget(rtRef.current);
@@ -400,7 +438,7 @@ export default function Hero3D() {
 			>
 				<color
 					attach="background"
-					args={[0x050509]}
+					args={[0x2a2a2a]}
 				/>
 				<Scene />
 			</Canvas>

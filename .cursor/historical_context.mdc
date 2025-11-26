@@ -1,0 +1,5 @@
+Hero3D.tsx: Added fluid-like cursor trail by advecting the feedback texture with pointer velocity, adding simple diffusion blur, and drawing an elongated stroke so the mask feels like liquid following the cursor.
+Hero3D.tsx: Reduced pointerRadius uniform so the fluid blob/trail is smaller and feels tighter around the cursor.
+Hero3D.tsx: Adjusted pointerRadius (~+20%) and reduced pointerDuration so the fluid blob is slightly larger but fades more quickly.
+Hero3D.tsx: Changed Canvas background color from near-black to a neutral gray (0x2a2a2a) behind the 3D scene.
+
