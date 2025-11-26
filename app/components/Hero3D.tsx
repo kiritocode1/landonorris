@@ -72,15 +72,29 @@ class BlobMaterial extends THREE.MeshBasicMaterial {
       // Advection step: push the field along the cursor velocity for a
       // more fluid, streaky motion instead of a static blob.
       vec2 vel = pointerVelocity * vec2(aspect, 1.0);
-      float advectStrength = 0.12;
+      float advectStrength = 0.18;
       vec2 advectedUv = vUv - vel * advectStrength;
+      advectedUv = clamp(advectedUv, vec2(0.001), vec2(0.999));
+
+      // Approximate curl by looking at local gradient of the scalar field
+      // and swirl along its perpendicular. This mimics vorticity a bit.
+      vec2 texel = vec2(0.002, 0.002);
+      float center = texture2D(fbTexture, advectedUv).r;
+      float rightV = texture2D(fbTexture, advectedUv + vec2(texel.x, 0.0)).r;
+      float leftV = texture2D(fbTexture, advectedUv - vec2(texel.x, 0.0)).r;
+      float upV = texture2D(fbTexture, advectedUv + vec2(0.0, texel.y)).r;
+      float downV = texture2D(fbTexture, advectedUv - vec2(0.0, texel.y)).r;
+      vec2 grad = vec2(rightV - leftV, upV - downV);
+      vec2 curlDir = vec2(-grad.y, grad.x);
+      float curlStrength = 0.06;
+      advectedUv += curlDir * curlStrength;
       advectedUv = clamp(advectedUv, vec2(0.001), vec2(0.999));
       
       float rVal = texture2D(fbTexture, advectedUv).r;
       
       // Simple diffusion: small blur around the advected sample to get
       // softer, more fluid trails.
-      vec2 blurOffset = vec2(0.002, 0.002);
+      vec2 blurOffset = texel;
       rVal += texture2D(fbTexture, advectedUv + blurOffset).r;
       rVal += texture2D(fbTexture, advectedUv - blurOffset).r;
       rVal += texture2D(fbTexture, advectedUv + vec2(blurOffset.x, -blurOffset.y)).r;
