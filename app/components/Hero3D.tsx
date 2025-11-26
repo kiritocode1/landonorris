@@ -363,8 +363,8 @@ function Scene() {
 		<>
 			<BlobSystem onTextureReady={handleTextureReady} />
 			<ambientLight
-				intensity={Math.PI}
-				color={0xffffff}
+				intensity={Math.PI * 0.35}
+				color={0xb0b0b0}
 			/>
 			<HeadModel />
 			<HelmetModel blobTexture={blobTexture} />
@@ -384,7 +384,7 @@ export default function Hero3D() {
 	const camShift = useMemo(() => new THREE.Vector3(0, 1, 0), []);
 
 	return (
-		<div className="w-full h-screen">
+		<div className="w-full h-screen bg-black">
 			<Canvas
 				camera={{
 					fov: 30,
@@ -400,7 +400,7 @@ export default function Hero3D() {
 			>
 				<color
 					attach="background"
-					args={[0xffffff]}
+					args={[0x050509]}
 				/>
 				<Scene />
 			</Canvas>
