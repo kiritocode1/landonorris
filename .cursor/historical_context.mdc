@@ -5,3 +5,14 @@ Hero3D.tsx: Changed Canvas background color from near-black to a neutral gray (0
 Hero3D.tsx: Tweaked blob shader advection and added a curl-like term based on local gradients so the cursor trail swirls and diffuses more like a fluid sim.
 page.tsx: Replaced bare full-screen hero with an overlaid UI inspired by landonorris.com, branding BLANKO NORRIS, crediting aryank.space, and adding a dark, minimalist cyberpunk paragraph with English/Japanese lines referencing the original site.
 layout.tsx: Updated Next.js metadata to BLANKO NORRIS branding with cyberpunk helmet interface title, description, and basic Open Graph config.
+page.tsx: Added a top-right music control slot that renders a client-side MusicControl component and an <audio> tag wired to /music.mp3.
+MusicControl.tsx: New client component that shows the BLANKO music pill with play/pause button and animated sine-wave indicator, controlling the shared #blanko-music-player element.
+globals.css: Added a sine-move keyframe animation used by the sine-wave indicator for horizontal motion.
+MusicControl.tsx: Updated the control to be a minimal white waveform only; flat line before playback, and an animated sine/cos pair that alternates via CSS when the audio is playing.
+globals.css: Added blanko-wave-sine / blanko-wave-cos keyframes and classes to drive the sine/cos opacity swap while keeping the stroke pure white.
+MusicControl.tsx: Smoothed the transition between flat line and wavy state by always rendering both and crossfading their SVG groups with CSS opacity transitions.
+globals.css: Added blanko-wave-group-* utility classes for opacity transitions so the waveform fades between line and sine/cos rather than snapping.
+page.tsx: Enabled autoPlay on the /music.mp3 audio element so playback begins by default when allowed by the browser.
+MusicControl.tsx: Set audio volume to 0.7 (~30% quieter) and attempt to start playback on mount, with a safe fallback if the browser blocks autoplay.
+page.tsx: Moved the music control below the "made by aryank.space" text in the header right stack to better match the layout hierarchy.
+MusicControl.tsx: Removed the SVG waveform and replaced it with a simple "Music: On/Off" pill styled like the rest of the UI.

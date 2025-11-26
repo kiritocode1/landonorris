@@ -1,26 +1,86 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+	--background: #ffffff;
+	--foreground: #171717;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--font-sans: var(--font-geist-sans);
+	--font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+	:root {
+		--background: #0a0a0a;
+		--foreground: #ededed;
+	}
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+	background: var(--background);
+	color: var(--foreground);
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+@keyframes sine-move {
+	0% {
+		transform: translateX(0);
+	}
+	100% {
+		transform: translateX(100%);
+	}
+}
+
+@keyframes blanko-wave-sine-mode {
+	0%,
+	45% {
+		opacity: 1;
+	}
+	55%,
+	100% {
+		opacity: 0;
+	}
+}
+
+@keyframes blanko-wave-cos-mode {
+	0%,
+	45% {
+		opacity: 0;
+	}
+	55%,
+	100% {
+		opacity: 1;
+	}
+}
+
+.blanko-wave-sine,
+.blanko-wave-cos {
+	fill: none;
+	stroke: #ffffff;
+	stroke-width: 1.4;
+	stroke-linecap: round;
+}
+
+.blanko-wave-sine {
+	animation: blanko-wave-sine-mode 1.6s ease-in-out infinite;
+}
+
+.blanko-wave-cos {
+	animation: blanko-wave-cos-mode 1.6s ease-in-out infinite;
+}
+
+.blanko-wave-group-line,
+.blanko-wave-group-wave {
+	transition: opacity 220ms ease;
+}
+
+.blanko-wave-group-visible {
+	opacity: 1;
+}
+
+.blanko-wave-group-hidden {
+	opacity: 0;
 }

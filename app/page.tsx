@@ -1,4 +1,5 @@
 import Hero3DClient from "./Hero3DClient";
+import MusicControl from "./components/MusicControl";
 
 export default function Home() {
 	return (
@@ -15,16 +16,19 @@ export default function Home() {
 						<p className="text-xs font-semibold uppercase tracking-[0.32em] text-neutral-500">BLANKO</p>
 						<p className="mt-1 text-2xl font-semibold uppercase tracking-[0.32em]">NORRIS</p>
 					</div>
-					<div className="text-[0.6rem] uppercase tracking-[0.28em] text-neutral-500">
-						made by{" "}
-						<a
-							href="https://aryank.space"
-							target="_blank"
-							rel="noreferrer"
-							className="underline underline-offset-4"
-						>
-							aryank.space
-						</a>
+					<div className="flex flex-col items-end gap-1">
+						<div className="text-[0.6rem] uppercase tracking-[0.28em] text-neutral-500">
+							made by{" "}
+							<a
+								href="https://aryank.space"
+								target="_blank"
+								rel="noreferrer"
+								className="underline underline-offset-4"
+							>
+								aryank.space
+							</a>
+						</div>
+						<MusicControl />
 					</div>
 				</header>
 
@@ -48,6 +52,11 @@ export default function Home() {
 							, reimagined as a quieter, grittier interface for BLANKO NORRIS.
 						</p>
 					</div>
+					<audio
+						id="blanko-music-player"
+						src="/music.mp3"
+						autoPlay
+					/>
 				</section>
 			</div>
 		</main>
